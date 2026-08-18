@@ -1,6 +1,6 @@
 -- include subprojects
 includes("lib/commonlibsse-ng")
-
+add_requires("nlohmann_json v3.12.0")
 -- set project constants
 set_project("skilltree-to-json")
 set_version("0.0.0")
@@ -19,7 +19,7 @@ target("skilltree-to-json")
         author = "Mattdokn",
         description = "SKSE64 plugin template using CommonLibSSE-NG"
     })
-
+    add_packages("nlohmann_json")
     -- add src files
     add_files("src/**.cpp")
     add_headerfiles("src/**.h")

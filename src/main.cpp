@@ -13,47 +13,19 @@ void SetupLog() {
 	spdlog::flush_on(spdlog::level::trace);
 }
 
-
-void dumpPerkTree(RE::BGSSkillPerkTreeNode* node,
-				  std::unordered_set<RE::BGSSkillPerkTreeNode*>& visited,
-				  int depth = 0)
+json perkNodeToJson(RE::BGSSkillPerkTreeNode* node)
 {
-	if (!node || visited.contains(node)) {
-		return;
-	}
+	json result;
 
-	visited.insert(node);
+	result["index"] = node->index;
+	result["position"] = {
+		{"gridX", node->perkGridX},
+		{"gridY", node->perkGridY},
+		{"x", node->horizontalPosition},
+		{"y", node->verticalPosition}
+	};
 
-	const auto indent = std::string(depth * 2, ' ');
-
-	if (node->perk) {
-		logs::info(
-			"{}Node {}: {} | FormID {:08X} | Grid ({}, {}) | Pos ({:.2f}, {:.2f})",
-			indent,
-			node->index,
-			node->perk->GetName(),
-			node->perk->GetFormID(),
-			node->perkGridX,
-			node->perkGridY,
-			node->horizontalPosition,
-			node->verticalPosition
-		);
-	} else {
-		logs::info(
-			"{}Node {}: NO PERK | Grid ({}, {})",
-			indent,
-			node->index,
-			node->perkGridX,
-			node->perkGridY
-		);
-	}
-
-	logs::info(
-		"{}  parents: {}, children: {}",
-		indent,
-		node->parents.size(),
-		node->children.size()
-	);
+	result["parents"] = json::array();
 
 	for (auto* parent : node->parents) {
 		if (!parent) {
@@ -61,23 +33,62 @@ void dumpPerkTree(RE::BGSSkillPerkTreeNode* node,
 		}
 
 		if (parent->perk) {
-			logs::info(
-				"{}  <- parent: {} ({:08X})",
-				indent,
-				parent->perk->GetName(),
-				parent->perk->GetFormID()
+			result["parents"].push_back(
+				std::format("{:08X}", parent->perk->GetFormID())
 			);
 		}
 	}
 
+	if (node->perk) {
+		auto* perk = node->perk;
+		RE::BSString description;
+		perk->GetDescription(description, perk, 0);
+		result["perk"] = {
+			{"formId", std::format("{:08X}", perk->GetFormID())},
+			{"name", perk->GetName()},
+			{"description", description.c_str()},
+		};
+
+		result["perk"]["level"] = perk->data.level;
+		result["perk"]["ranks"] = perk->data.numRanks;
+		result["perk"]["playable"] = perk->data.playable;
+		result["perk"]["hidden"] = perk->data.hidden;
+
+		for (RE::BGSPerkEntry* perkEntry : perk->perkEntries)
+		{
+
+		}
+	} else {
+		result["perk"] = nullptr;
+	}
+
+	return result;
+}
+
+void addPerkNode(
+	RE::BGSSkillPerkTreeNode* node,
+	json& perks,
+	std::unordered_set<RE::BGSSkillPerkTreeNode*>& visited)
+{
+	if (!node || visited.contains(node)) {
+		return;
+	}
+
+	visited.insert(node);
+
+	perks.push_back(perkNodeToJson(node));
+
 	for (auto* child : node->children) {
-		dumpPerkTree(child, visited, depth + 1);
+		addPerkNode(child, perks, visited);
 	}
 }
 
-void iterateSkilltrees()
+json buildPerkTreeJson()
 {
-	logs::info("iterating skilltrees");
+	json root;
+
+	root["version"] = 1;
+	root["skills"] = json::array();
 
 	auto* actorValueList = RE::ActorValueList::GetSingleton();
 
@@ -91,33 +102,53 @@ void iterateSkilltrees()
 			continue;
 		}
 
-		logs::info(
-			"===== {} | FormID {:08X} | width {} =====",
-			info->GetName(),
-			info->GetFormID(),
-			info->perkTreeWidth
+		json skill;
+
+		skill["name"] = info->GetName();
+		skill["formId"] = std::format(
+			"{:08X}",
+			info->GetFormID()
 		);
+		skill["treeWidth"] = info->perkTreeWidth;
+		skill["perks"] = json::array();
 
 		std::unordered_set<RE::BGSSkillPerkTreeNode*> visited;
 
-		dumpPerkTree(
+		addPerkNode(
 			info->perkTree,
+			skill["perks"],
 			visited
 		);
 
-		logs::info(
-			"===== {}: {} nodes =====",
-			info->GetName(),
-			visited.size()
-		);
+		root["skills"].push_back(std::move(skill));
 	}
+
+	return root;
+}
+
+void exportPerkTrees()
+{
+	auto jsonData = buildPerkTreeJson();
+
+	std::ofstream file(
+		"Data/SKSE/Plugins/SkillTreeToJson.json"
+	);
+
+	if (!file) {
+		logs::error("Failed to open JSON output file");
+		return;
+	}
+
+	file << jsonData.dump(2);
+
+	logs::info("Perk trees exported successfully");
 }
 
 SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse) {
 	SKSE::Init(a_skse);
 	SetupLog();
 	SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message) {
-		if (message->type == SKSE::MessagingInterface::kDataLoaded) iterateSkilltrees();
+		if (message->type == SKSE::MessagingInterface::kDataLoaded) exportPerkTrees();
 	});
 	return true;
 }

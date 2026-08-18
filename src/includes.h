@@ -6,7 +6,16 @@
 #define SKILLTREE_TO_JSON_INCLUDES_H
 
 #include <unordered_set>
+#include <RE/Skyrim.h>
+#include <SKSE/SKSE.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <format>
+#include <nlohmann/json.hpp>
 
+#include <fstream>
+#include <unordered_set>
+
+using json = nlohmann::json;
 
 
 #endif //SKILLTREE_TO_JSON_INCLUDES_H
