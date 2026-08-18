@@ -2,7 +2,7 @@
 includes("lib/commonlibsse-ng")
 
 -- set project constants
-set_project("commonlibsse-ng-template")
+set_project("skilltree-to-json")
 set_version("0.0.0")
 set_license("GPL-3.0")
 set_languages("c++23")
@@ -13,10 +13,10 @@ add_rules("mode.debug", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 
 -- define targets
-target("commonlibsse-ng-template")
+target("skilltree-to-json")
     add_rules("commonlibsse-ng.plugin", {
-        name = "commonlibsse-ng-template",
-        author = "libxse",
+        name = "skilltree-to-json",
+        author = "Mattdokn",
         description = "SKSE64 plugin template using CommonLibSSE-NG"
     })
 
