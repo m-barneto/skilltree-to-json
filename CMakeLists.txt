@@ -5,6 +5,8 @@
 # project
 cmake_minimum_required(VERSION 3.15.0)
 cmake_policy(SET CMP0091 NEW)
+set(CMAKE_C_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/cl.exe")
+set(CMAKE_CXX_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/cl.exe")
 project(skilltree-to-json VERSION 0.0.0 LANGUAGES CXX)
 set(CURRENT_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 set(CURRENT_COMPILER_FRONTEND_VARIANT ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT})
@@ -38,10 +40,10 @@ target_include_directories(commonlibsse-ng INTERFACE
     lib/commonlibsse-ng/include
 )
 target_include_directories(commonlibsse-ng SYSTEM PRIVATE
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/bce218f381b64408a0306b150ff07fd0/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/4d6722c458c2480d891529a114adf62a/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
 )
 target_compile_definitions(commonlibsse-ng PRIVATE
     COMMONLIB_VERSION="v6.3.3"
@@ -58,6 +60,23 @@ target_compile_options(commonlibsse-ng PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>
     $<$<COMPILE_LANGUAGE:CUDA>:-G>
 )
+if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$")
+target_compile_options(commonlibsse-ng PRIVATE
+    $<$<COMPILE_LANGUAGE:CXX>:-fms-compatibility>
+    $<$<COMPILE_LANGUAGE:CXX>:-fms-extensions>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-delete-non-abstract-non-virtual-dtor>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-volatile>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-ignored-qualifiers>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-inconsistent-missing-override>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-microsoft-include>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-overloaded-virtual>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-pragma-system-header-outside-header>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-reinterpret-base-class>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-switch>
+    $<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-private-field>
+)
+endif()
 if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
 target_compile_options(commonlibsse-ng PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:/bigobj>
@@ -99,23 +118,6 @@ target_compile_options(commonlibsse-ng PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:/wd5105>
     $<$<COMPILE_LANGUAGE:CXX>:/wd5204>
     $<$<COMPILE_LANGUAGE:CXX>:/wd5220>
-)
-endif()
-if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC" AND CURRENT_COMPILER_ID MATCHES "Clang$|^IntelLLVM$")
-target_compile_options(commonlibsse-ng PRIVATE
-    $<$<COMPILE_LANGUAGE:CXX>:-fms-compatibility>
-    $<$<COMPILE_LANGUAGE:CXX>:-fms-extensions>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-delete-non-abstract-non-virtual-dtor>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-deprecated-volatile>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-ignored-qualifiers>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-inconsistent-missing-override>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-microsoft-include>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-overloaded-virtual>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-pragma-system-header-outside-header>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-reinterpret-base-class>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-switch>
-    $<$<COMPILE_LANGUAGE:CXX>:-Wno-unused-private-field>
 )
 endif()
 if(CURRENT_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
@@ -174,8 +176,8 @@ target_link_libraries(commonlibsse-ng PRIVATE
     version
 )
 target_link_directories(commonlibsse-ng PRIVATE
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/bce218f381b64408a0306b150ff07fd0/lib
+    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/4d6722c458c2480d891529a114adf62a/lib
 )
 # private sourcefiles from sourcebatch c++.build for target commonlibsse-ng
 target_sources(commonlibsse-ng PRIVATE 
@@ -2736,11 +2738,11 @@ target_include_directories(skilltree-to-json PRIVATE
     lib/commonlibsse-ng/include
 )
 target_include_directories(skilltree-to-json SYSTEM PRIVATE
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/n/nlohmann_json/v3.12.0/ab8414047c424750bdc9d7a0ff7afdde/include
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/n/nlohmann_json/v3.12.0/ab8414047c424750bdc9d7a0ff7afdde/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/bce218f381b64408a0306b150ff07fd0/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/4d6722c458c2480d891529a114adf62a/include
+    C:/Users/Matthew/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
 )
 target_compile_definitions(skilltree-to-json PRIVATE
     ENABLE_SKYRIM_SE=1
@@ -2822,8 +2824,8 @@ target_link_libraries(skilltree-to-json PRIVATE
 )
 target_link_directories(skilltree-to-json PRIVATE
     build/windows/x64/debug
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
-    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
+    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/bce218f381b64408a0306b150ff07fd0/lib
+    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/4d6722c458c2480d891529a114adf62a/lib
 )
 # private sourcefiles from sourcebatch c++.build for target skilltree-to-json
 target_sources(skilltree-to-json PRIVATE 
