@@ -16,6 +16,7 @@
 #include <unordered_set>
 
 using json = nlohmann::json;
+using namespace RE;
 
 
 #endif //SKILLTREE_TO_JSON_INCLUDES_H

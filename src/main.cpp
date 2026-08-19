@@ -1,154 +1,255 @@
-
 #include "includes.h"
 
-void SetupLog() {
-	auto logsFolder = SKSE::log::log_directory();
-	if (!logsFolder) SKSE::stl::report_and_fail("SKSE log_directory not provided, logs disabled.");
-	auto pluginName = SKSE::PluginDeclaration::GetSingleton()->GetName();
-	auto logFilePath = *logsFolder / std::format("{}.log", pluginName);
-	auto fileLoggerPtr = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath.string(), true);
-	auto loggerPtr = std::make_shared<spdlog::logger>("log", std::move(fileLoggerPtr));
-	spdlog::set_default_logger(std::move(loggerPtr));
-	spdlog::set_level(spdlog::level::trace);
-	spdlog::flush_on(spdlog::level::trace);
-}
+namespace {
+    struct PerkEntryData {
+        std::string type;
+        std::uint8_t rank{};
+        std::uint8_t priority{};
 
-json perkNodeToJson(RE::BGSSkillPerkTreeNode* node)
-{
-	json result;
+        json toJson() {
+        }
+    };
 
-	result["index"] = node->index;
-	result["position"] = {
-		{"gridX", node->perkGridX},
-		{"gridY", node->perkGridY},
-		{"x", node->horizontalPosition},
-		{"y", node->verticalPosition}
-	};
+    struct PerkData {
+        std::string name;
+        std::string formId;
+        std::vector<PerkEntryData> entries;
 
-	result["parents"] = json::array();
+        json toJson() {
+            json j = {
+                {"name", name},
+                {"formId", formId},
+                {"entries", json::array()}
+            };
 
-	for (auto* parent : node->parents) {
-		if (!parent) {
-			continue;
-		}
+            for (auto& entry: entries) {
+                j["entries"].push_back(entry.toJson());
+            }
+        }
+    };
 
-		if (parent->perk) {
-			result["parents"].push_back(
-				std::format("{:08X}", parent->perk->GetFormID())
-			);
-		}
-	}
+    struct SkillData {
+    public:
+        std::string name;
+        std::string formId;
+        std::vector<PerkData> perks;
 
-	if (node->perk) {
-		auto* perk = node->perk;
-		RE::BSString description;
-		perk->GetDescription(description, perk, 0);
-		result["perk"] = {
-			{"formId", std::format("{:08X}", perk->GetFormID())},
-			{"name", perk->GetName()},
-			{"description", description.c_str()},
-		};
+        json toJson() {
+            json j = {
+                {"name", name},
+                {"formId", formId},
+                {"perks", json::array()}
+            };
 
-		result["perk"]["level"] = perk->data.level;
-		result["perk"]["ranks"] = perk->data.numRanks;
-		result["perk"]["playable"] = perk->data.playable;
-		result["perk"]["hidden"] = perk->data.hidden;
+            for (auto& perk: perks) {
+                j["perks"].push_back(perk.toJson());
+            }
 
-		for (RE::BGSPerkEntry* perkEntry : perk->perkEntries)
-		{
+            return j;
+        }
+    };
 
-		}
-	} else {
-		result["perk"] = nullptr;
-	}
+    struct SkillTreeData {
+        std::vector<SkillData> skills;
 
-	return result;
-}
+        json toJson() {
+            json j = {
+                {"skills", json::array()}
+            };
 
-void addPerkNode(
-	RE::BGSSkillPerkTreeNode* node,
-	json& perks,
-	std::unordered_set<RE::BGSSkillPerkTreeNode*>& visited)
-{
-	if (!node || visited.contains(node)) {
-		return;
-	}
+            for (auto& skill: skills) {
+                j["skills"].push_back(skill.toJson());
+            }
 
-	visited.insert(node);
+            return j;
+        }
+    };
 
-	perks.push_back(perkNodeToJson(node));
 
-	for (auto* child : node->children) {
-		addPerkNode(child, perks, visited);
-	}
-}
+    void SetupLog() {
+        const auto logsFolder = SKSE::log::log_directory();
+        if (!logsFolder) stl::report_and_fail("SKSE log_directory not provided, logs disabled.");
+        auto pluginName = SKSE::PluginDeclaration::GetSingleton()->GetName();
+        const auto logFilePath = *logsFolder / std::format("{}.log", pluginName);
+        auto fileLoggerPtr = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilePath.string(), true);
+        auto loggerPtr = std::make_shared<spdlog::logger>("log", std::move(fileLoggerPtr));
+        spdlog::set_default_logger(std::move(loggerPtr));
+        spdlog::set_level(spdlog::level::trace);
+        spdlog::flush_on(spdlog::level::trace);
+    }
 
-json buildPerkTreeJson()
-{
-	json root;
+    json perkNodeToJson(BGSSkillPerkTreeNode* node) {
+        json result;
 
-	root["version"] = 1;
-	root["skills"] = json::array();
+        result["index"] = node->index;
+        result["position"] = {
+            {"gridX", node->perkGridX},
+            {"gridY", node->perkGridY},
+            {"x", node->horizontalPosition},
+            {"y", node->verticalPosition}
+        };
 
-	auto* actorValueList = RE::ActorValueList::GetSingleton();
+        result["parents"] = json::array();
 
-	for (std::uint32_t i = 0;
-		 i < std::to_underlying(RE::ActorValue::kTotal);
-		 ++i)
-	{
-		auto* info = actorValueList->actorValues[i];
+        for (const auto* parent: node->parents) {
+            if (!parent) {
+                continue;
+            }
 
-		if (!info || !info->perkTree) {
-			continue;
-		}
+            if (parent->perk) {
+                result["parents"].push_back(
+                    std::format("{:08X}", parent->perk->GetFormID())
+                );
+            }
+        }
 
-		json skill;
+        if (node->perk) {
+            auto* perk = node->perk;
+            BSString description;
+            perk->GetDescription(description, perk, 0);
+            result["perk"] = {
+                {"formId", std::format("{:08X}", perk->GetFormID())},
+                {"name", perk->GetName()},
+                {"description", description.c_str()},
+            };
 
-		skill["name"] = info->GetName();
-		skill["formId"] = std::format(
-			"{:08X}",
-			info->GetFormID()
-		);
-		skill["treeWidth"] = info->perkTreeWidth;
-		skill["perks"] = json::array();
+            result["perk"]["level"] = perk->data.level;
+            result["perk"]["ranks"] = perk->data.numRanks;
+            result["perk"]["playable"] = perk->data.playable;
+            result["perk"]["hidden"] = perk->data.hidden;
 
-		std::unordered_set<RE::BGSSkillPerkTreeNode*> visited;
+            for (BGSPerkEntry* perkEntry: perk->perkEntries) {
+            }
+        } else {
+            result["perk"] = nullptr;
+        }
 
-		addPerkNode(
-			info->perkTree,
-			skill["perks"],
-			visited
-		);
+        return result;
+    }
 
-		root["skills"].push_back(std::move(skill));
-	}
+    void addPerkNode(BGSSkillPerkTreeNode* node, json& perks, std::unordered_set<BGSSkillPerkTreeNode*>& visited) {
+        if (!node || visited.contains(node)) {
+            return;
+        }
 
-	return root;
-}
+        visited.insert(node);
 
-void exportPerkTrees()
-{
-	auto jsonData = buildPerkTreeJson();
+        perks.push_back(perkNodeToJson(node));
 
-	std::ofstream file(
-		"Data/SKSE/Plugins/SkillTreeToJson.json"
-	);
+        for (auto* child: node->children) {
+            addPerkNode(child, perks, visited);
+        }
+    }
 
-	if (!file) {
-		logs::error("Failed to open JSON output file");
-		return;
-	}
+    json buildPerkTreeJson() {
+        json root;
 
-	file << jsonData.dump(2);
+        root["version"] = 1;
+        root["skills"] = json::array();
 
-	logs::info("Perk trees exported successfully");
+        const ActorValueList* actorValueList = ActorValueList::GetSingleton();
+
+        for (const auto info: actorValueList->actorValues) {
+            if (!info || !info->perkTree || info->type != ActorValueInfo::ActorValueType::kSkill) {
+                continue;
+            }
+
+            json skill;
+
+            skill["name"] = info->GetName();
+            skill["formId"] = std::format(
+                "{:08X}",
+                info->GetFormID()
+            );
+            skill["treeWidth"] = info->perkTreeWidth;
+            skill["perks"] = json::array();
+
+            std::unordered_set<BGSSkillPerkTreeNode*> visited;
+
+            addPerkNode(
+                info->perkTree,
+                skill["perks"],
+                visited
+            );
+
+            root["skills"].push_back(std::move(skill));
+        }
+
+        return root;
+    }
+
+    void getPerks(std::vector<PerkData>& perks) {
+
+    }
+
+    void exportPerkTrees() {
+        // Iterate over all skill trees
+        const ActorValueList* actorValueList = ActorValueList::GetSingleton();
+
+        for (const auto info: actorValueList->actorValues) {
+            if (!info || !info->perkTree || info->type != ActorValueInfo::ActorValueType::kSkill) {
+                continue;
+            }
+
+            std::vector<PerkData> perks = std::vector<PerkData>();
+            getPerks(perks);
+
+            // Iterate over all perks
+
+
+
+            auto skillData = SkillData {
+                info->GetName(),
+                std::format("{:08X}", info->GetFormID()),
+                perks
+            };
+
+
+
+            json skill;
+
+            skill["name"] = info->GetName();
+            skill["formId"] = std::format(
+                "{:08X}",
+                info->GetFormID()
+            );
+            skill["treeWidth"] = info->perkTreeWidth;
+            skill["perks"] = json::array();
+
+            std::unordered_set<BGSSkillPerkTreeNode*> visited;
+
+            addPerkNode(
+                info->perkTree,
+                skill["perks"],
+                visited
+            );
+
+            //root["skills"].push_back(std::move(skill));
+        }
+
+
+        const auto jsonData = buildPerkTreeJson();
+
+        std::ofstream file(
+            "Data/SKSE/Plugins/SkillTreeToJson.json"
+        );
+
+        if (!file) {
+            logs::error("Failed to open JSON output file");
+            return;
+        }
+
+        file << jsonData.dump(2);
+
+        logs::info("Perk trees exported successfully");
+    }
 }
 
 SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse) {
-	SKSE::Init(a_skse);
-	SetupLog();
-	SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message) {
-		if (message->type == SKSE::MessagingInterface::kDataLoaded) exportPerkTrees();
-	});
-	return true;
+    SKSE::Init(a_skse);
+    SetupLog();
+    SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message) {
+        if (message->type == SKSE::MessagingInterface::kDataLoaded) exportPerkTrees();
+    });
+    return true;
 }

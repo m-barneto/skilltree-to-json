@@ -38,10 +38,10 @@ target_include_directories(commonlibsse-ng INTERFACE
     lib/commonlibsse-ng/include
 )
 target_include_directories(commonlibsse-ng SYSTEM PRIVATE
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
-    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
-    C:/Users/Matthew/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
 )
 target_compile_definitions(commonlibsse-ng PRIVATE
     COMMONLIB_VERSION="v6.3.3"
@@ -174,8 +174,8 @@ target_link_libraries(commonlibsse-ng PRIVATE
     version
 )
 target_link_directories(commonlibsse-ng PRIVATE
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
-    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
 )
 # private sourcefiles from sourcebatch c++.build for target commonlibsse-ng
 target_sources(commonlibsse-ng PRIVATE 
@@ -2736,11 +2736,11 @@ target_include_directories(skilltree-to-json PRIVATE
     lib/commonlibsse-ng/include
 )
 target_include_directories(skilltree-to-json SYSTEM PRIVATE
-    C:/Users/Matthew/AppData/Local/.xmake/packages/n/nlohmann_json/v3.12.0/ab8414047c424750bdc9d7a0ff7afdde/include
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
-    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
-    C:/Users/Matthew/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/n/nlohmann_json/v3.12.0/ab8414047c424750bdc9d7a0ff7afdde/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxmath/2024.02/b43cee1705a040bdb171c586b0ad9685/include/directxmath
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/include
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/r/rapidcsv/v8.92/3ea9c5686c084d99b7090d143af1b725/include
 )
 target_compile_definitions(skilltree-to-json PRIVATE
     ENABLE_SKYRIM_SE=1
@@ -2822,8 +2822,8 @@ target_link_libraries(skilltree-to-json PRIVATE
 )
 target_link_directories(skilltree-to-json PRIVATE
     build/windows/x64/debug
-    C:/Users/Matthew/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
-    C:/Users/Matthew/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/d/directxtk/24.2.0/b18d6bea7725470c8655da3bd44a8977/lib
+    C:/Users/Mattdokn/AppData/Local/.xmake/packages/s/spdlog/v1.16.0/eca85f31a5d64a2e908810df28e4a565/lib
 )
 # private sourcefiles from sourcebatch c++.build for target skilltree-to-json
 target_sources(skilltree-to-json PRIVATE 
