@@ -1,10 +1,18 @@
 #include "includes.h"
 
 namespace {
+    struct EntryPointPerkEntryData {
+
+    };
+    struct AbilityPerkEntryData {
+
+    };
+
     struct PerkEntryData {
-        std::string type;
+        PERK_ENTRY_TYPE type;
         std::uint8_t rank{};
         std::uint8_t priority{};
+        void* data;
 
         json toJson() {
         }
@@ -13,7 +21,7 @@ namespace {
     struct PerkData {
         std::string name;
         std::string formId;
-        std::vector<PerkEntryData> entries;
+        std::vector<PerkEntryData> perkEntries;
 
         json toJson() {
             json j = {
@@ -22,7 +30,7 @@ namespace {
                 {"entries", json::array()}
             };
 
-            for (auto& entry: entries) {
+            for (auto& entry: perkEntries) {
                 j["entries"].push_back(entry.toJson());
             }
         }
@@ -136,7 +144,7 @@ namespace {
 
         perks.push_back(perkNodeToJson(node));
 
-        for (auto* child: node->children) {
+        for (const auto& child: node->children) {
             addPerkNode(child, perks, visited);
         }
     }
@@ -178,30 +186,56 @@ namespace {
         return root;
     }
 
-    void getPerks(std::vector<PerkData>& perks) {
+    void getPerks(BGSPerk* perk, std::vector<PerkData>& perks) {
+        // Get perk entries
+        std::vector<PerkEntryData> perkEntries = std::vector<PerkEntryData>();
+        for (const auto& perkEntry: perk->perkEntries) {
+            if (perkEntry->GetType() == PERK_ENTRY_TYPE::kQuest) {
+                logs::error("Found perk using quest perkentry: ");
+                logs::error("{}", perk->GetName());
+                continue;
+            }
+            PerkEntryData perkEntryData = {
+                .type = perkEntry->GetType(),
+                .rank = perkEntry->header.rank,
+                .priority = perkEntry->header.priority,
+                .data = perkEntry->GetFunctionData()
+            };
+            perkEntries.push_back(perkEntryData);
+        }
 
+        // add this perk to the perk list
+        PerkData perkData = {
+            .name = perk->GetName(),
+            .formId = std::format("{:08X}", perk->GetFormID()),
+            .perkEntries = perkEntries
+        };
+
+        // Call this on every child
+        for (const BGSPerk& perk : )
     }
 
     void exportPerkTrees() {
         // Iterate over all skill trees
         const ActorValueList* actorValueList = ActorValueList::GetSingleton();
 
-        for (const auto info: actorValueList->actorValues) {
+        for (const auto& info: actorValueList->actorValues) {
             if (!info || !info->perkTree || info->type != ActorValueInfo::ActorValueType::kSkill) {
                 continue;
             }
 
             std::vector<PerkData> perks = std::vector<PerkData>();
-            getPerks(perks);
+            getPerks(info->perkTree->perk, perks);
+            info->perkTree->chi
 
             // Iterate over all perks
 
 
 
             auto skillData = SkillData {
-                info->GetName(),
-                std::format("{:08X}", info->GetFormID()),
-                perks
+                .name = info->GetName(),
+                .formId = std::format("{:08X}", info->GetFormID()),
+                .perks = perks
             };
 
 
