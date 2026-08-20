@@ -28,6 +28,17 @@ namespace {
             nlohmann::json j{
                 {"type", type}
             };
+            //BGSEntryPoint
+            if (type == PERK_ENTRY_TYPE::kEntryPoint) {
+                auto* entryPoint = static_cast<BGSEntryPointPerkEntry*>(data);
+                j["entryType"] = entryPoint->functionData->GetType();
+            }
+            if (type == PERK_ENTRY_TYPE::kQuest) {
+                logs::error("QUEST ENTRY TYPE AHHHHHHH");
+            }
+            if (type == PERK_ENTRY_TYPE::kAbility) {
+
+            }
 
             return j;
         }
@@ -37,6 +48,8 @@ namespace {
         std::string name;
         std::string formID;
         std::string nextPerkFormID;
+        std::uint8_t level;
+        std::uint8_t numRanks;
         std::vector<PerkEntryData> perkEntries;
 
         json toJson() const {
@@ -44,6 +57,8 @@ namespace {
                 {"name", name},
                 {"formID", formID},
                 {"nextPerk", nextPerkFormID},
+                {"level", level},
+                {"numRanks", numRanks},
                 {"entries", nlohmann::json::array()}
             };
 
@@ -112,7 +127,7 @@ namespace {
         }
     };
 
-    void addPerkData(const BGSPerk* perk, RootData& data) {
+    void addPerkData(const BGSPerk* perk, RootData& data, const std::uint8_t level = 0) {
         if (!perk) {
             return;
         }
@@ -125,14 +140,17 @@ namespace {
         }
 
         PerkData perkData{
-            .name = perk->GetName(),
+            .name = perk->GetFullName(),
             .formID = formID,
             .nextPerkFormID = "",
+            .level = level,
+            .numRanks = perk->data.numRanks,
             .perkEntries = {}
         };
 
         if (perk->nextPerk) {
             perkData.nextPerkFormID = std::format("{:08X}", perk->nextPerk->GetFormID());
+            addPerkData(perk->nextPerk, data, level + 1);
         }
 
         for (const auto* entry: perk->perkEntries) {
@@ -142,7 +160,7 @@ namespace {
 
             PerkEntryData entryData{
                 .type = entry->GetType(),
-                .data = nullptr
+                .data = entry->GetFunctionData()
             };
 
             // We'll populate data based on the entry type.
@@ -203,7 +221,7 @@ namespace {
                 continue;
             }
             SkillTreeData skill{
-                .name = info->GetName(),
+                .name = info->GetFullName(),
                 .formID = std::format("{:08X}", info->GetFormID()),
                 .tree = {}
             };
